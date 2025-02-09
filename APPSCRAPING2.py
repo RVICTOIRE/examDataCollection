@@ -227,7 +227,7 @@ def page_evaluation():
     st.title("⭐ Évaluation de l'application")
     
     # Lien vers le formulaire Kobotoolbox
-    kobo_form_url = "https://ee.kobotoolbox.org/x/3ZAgNPD9"  # Remplacez par votre lien Kobotoolbox
+    kobo_form_url = "https://ee.kobotoolbox.org/x/3ZAgNPD9"  
     
     with st.form("form_eval"):
         name = st.text_input("👤 Nom")
@@ -256,12 +256,14 @@ def page_evaluation():
 
 # Menu principal Streamlit
 menu = st.sidebar.radio("📌 Menu", ["Scraper", "Téléchargement Données Brutes", "Dashboard", "Évaluation"])
-if menu == "Scraper":
-    main()
-elif menu == "Téléchargement Données Brutes":
-    page_telechargement_donnees()
-
-elif menu == "Dashboard":
-    page_dashboard()
-elif menu == "Évaluation":
-    page_evaluation()
+try:
+    if menu == "Scraper":
+        main()
+    elif menu == "Téléchargement Données Brutes":
+        page_telechargement_donnees()
+    elif menu == "Dashboard":
+        page_dashboard()
+    elif menu == "Évaluation":
+        page_evaluation()
+except NameError as e:
+    st.error(f"Erreur détectée: {e}")
