@@ -44,11 +44,13 @@ def scrape_page(url):
 # Fonction pour scraper plusieurs pages
 def scrape_multiple_pages(base_url, num_pages):
     all_data = pd.DataFrame()
+    progress_bar = st.progress(0)
     for page in range(1, num_pages + 1):
         url = f"{base_url}?page={page}"
-        print(f"Scraping de la page {page}...")
+        st.write(f"Scraping de la page {page}...")
         page_data = scrape_page(url)
         all_data = pd.concat([all_data, page_data], ignore_index=True)
+        progress_bar.progress(page / num_pages)  # Mettre à jour la barre de progression
     return all_data
 
 # Fonction principale pour le scraping
@@ -87,7 +89,7 @@ def main():
                 for index, row in scraped_data.iterrows():
                     st.image(row["Image"], caption=f"{row['Type']} - {row['Prix']} CFA", width=150)
                 
-                
+          
 
 
 
@@ -97,7 +99,9 @@ def page_telechargement_donnees():
     
     try:
         # Chemin vers le répertoire contenant les données brutes
-        data_directory = "C:/Users/DELL/Desktop/DIT/Data_colllection/examDataCollection/raw_data/"  # Modifiez ici avec le chemin réel
+        data_directory = "raw_data/"
+        if not os.path.exists(data_directory):
+            os.makedirs(data_directory) # Modifiez ici avec le chemin réel
         
         # Vérifier si le répertoire existe
         if not os.path.exists(data_directory):
@@ -106,7 +110,6 @@ def page_telechargement_donnees():
         
         # Lister tous les fichiers valides dans le répertoire
         files = [f for f in os.listdir(data_directory) if f.endswith(('.csv', '.json', '.xlsx'))]
-        
         if not files:
             st.warning("Aucun fichier trouvé dans le répertoire des données non nettoyées.")
             return
@@ -168,12 +171,15 @@ def page_dashboard():
     st.title("📊 Dashboard des données")
     
     # Chemin vers le répertoire contenant les fichiers nettoyés
-    cleaned_data_path = "C:/Users/DELL/Desktop/DIT/Data_colllection/examDataCollection/cleaned_data/"
+    cleaned_data_path = ".streamlit/cleaned_data/"
+    if not os.path.exists(cleaned_data_path):
+        os.makedirs(cleaned_data_path)
     
     try:
         # Vérifier si le répertoire existe
-        if not os.path.exists(cleaned_data_path):
-            st.error("Le répertoire 'cleaned_data' n'existe pas.")
+        files = [f for f in os.listdir(cleaned_data_path) if f.endswith(('.csv', '.xlsx'))]
+        if not files:
+            st.warning("Aucun fichier nettoyé trouvé dans le répertoire 'cleaned_data'.")
             return
         
         # Lister tous les fichiers dans le répertoire
