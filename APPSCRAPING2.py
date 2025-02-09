@@ -176,15 +176,8 @@ def page_dashboard():
         os.makedirs(cleaned_data_path)
     
     try:
-        # Vérifier si le répertoire existe
+        # Vérifier si le répertoire existe et lister les fichiers
         files = [f for f in os.listdir(cleaned_data_path) if f.endswith(('.csv', '.xlsx'))]
-        if not files:
-            st.warning("Aucun fichier nettoyé trouvé dans le répertoire 'cleaned_data'.")
-            return
-        
-        # Lister tous les fichiers dans le répertoire
-        files = [f for f in os.listdir(cleaned_data_path) if f.endswith(('.csv', '.xlsx'))]
-        
         if not files:
             st.warning("Aucun fichier nettoyé trouvé dans le répertoire 'cleaned_data'.")
             return
@@ -206,8 +199,7 @@ def page_dashboard():
         
         # Afficher un aperçu des données
         st.write(f"🔍 Aperçu des données du fichier : {selected_file}", data.head())
-    
-            
+        
         # Graphique des prix sous forme d'histogramme
         st.subheader("💰 Distribution des prix par intervalles de 5000")
         if "prix" in data.columns:
@@ -228,7 +220,7 @@ def page_dashboard():
                 price_counts = data["tranche_prix"].value_counts().sort_index()
                 
                 # Création du graphique
-                fig, ax = plt.subplots(figsize=(10, 6))  # Utilisez plt.subplots()
+                fig, ax = plt.subplots(figsize=(10, 6))
                 ax.bar(price_counts.index.astype(str), price_counts.values, color='skyblue', edgecolor="black")
                 
                 # Ajout de labels et titre
