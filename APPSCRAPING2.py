@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import os
 import matplotlib.pyplot as plt
 import webbrowser
-# Fonction pour scraper une seule page avec BeautifulSoup
+import numpy as np
 # Fonction pour scraper une seule page
 def scrape_page(url):
     try:
@@ -93,15 +93,15 @@ def main():
 
 
 
-
+# page de téléchargement des données
 def page_telechargement_donnees():
     st.title("📥 Télécharger des données non nettoyées")
     
     try:
-        # Chemin vers le répertoire contenant les données brutes
+        
         data_directory = "raw_data/"
         if not os.path.exists(data_directory):
-            os.makedirs(data_directory) # Modifiez ici avec le chemin réel
+            os.makedirs(data_directory) 
         
         # Vérifier si le répertoire existe
         if not os.path.exists(data_directory):
@@ -166,7 +166,7 @@ def page_telechargement_donnees():
     except Exception as e:
         st.error(f"Une erreur s'est produite lors du chargement des données : {e}")
 
-# Page dashboard
+
 def page_dashboard():
     st.title("📊 Dashboard des données")
     
@@ -177,75 +177,52 @@ def page_dashboard():
         os.makedirs(cleaned_data_path)
     
     try:
-        # Vérifier si le répertoire existe et lister les fichiers
+        # Lister les fichiers
         files = [f for f in os.listdir(cleaned_data_path) if f.endswith(('.csv', '.xlsx'))]
         if not files:
-            st.warning("Aucun fichier nettoyé trouvé dans le répertoire 'cleaned_data'.")
+            st.warning("Aucun fichier nettoyé trouvé dans 'cleaned_data'.")
             return
         
-        # Afficher une liste déroulante pour choisir un fichier
+        # Sélection du fichier
         selected_file = st.selectbox("🔍 Sélectionnez un fichier nettoyé :", files)
-        
-        # Construire le chemin complet du fichier sélectionné
         file_path = os.path.join(cleaned_data_path, selected_file)
-        
-        # Charger le fichier sélectionné
-        if file_path.endswith('.csv'):
-            data = pd.read_csv(file_path)
-        elif file_path.endswith('.xlsx'):
-            data = pd.read_excel(file_path)
-        
-        # Nettoyer les noms de colonnes
+
+        # Chargement des données
+        data = pd.read_csv(file_path) if file_path.endswith('.csv') else pd.read_excel(file_path)
         data.columns = data.columns.str.strip().str.lower()
         
-        # Afficher un aperçu des données
         st.write(f"🔍 Aperçu des données du fichier : {selected_file}", data.head())
         
-        # Graphique des prix sous forme d'histogramme
-        st.subheader("💰 Distribution des prix par intervalles de 5000")
+        # Vérifier la présence de la colonne 'prix'
         if "prix" in data.columns:
-            # Nettoyage et conversion de la colonne 'Prix'
             data["prix"] = pd.to_numeric(data["prix"], errors="coerce")
             prices = data["prix"].dropna()
-            
+
             if not prices.empty:
-                # Définir les tranches de prix
-                min_price = int(prices.min() // 5000) * 5000
-                max_price = int(prices.max() // 5000) * 5000 + 5000
-                bins = range(min_price, max_price + 5000, 5000)
-                
-                # Catégorisation des prix
-                data["tranche_prix"] = pd.cut(data["prix"], bins=bins, right=False)
-                
-                # Comptage des articles par tranche de prix
-                price_counts = data["tranche_prix"].value_counts().sort_index()
-                
-                # Création du graphique
-                fig, ax = plt.subplots(figsize=(10, 6))
-                ax.bar(price_counts.index.astype(str), price_counts.values, color='skyblue', edgecolor="black")
-                
-                # Ajout de labels et titre
-                ax.set_xlabel("Tranche de prix (CFA)", fontsize=12)
-                ax.set_ylabel("Nombre d'articles", fontsize=12)
-                ax.set_title("Distribution des prix par intervalles de 5000", fontsize=14)
-                
-                # Rotation des étiquettes pour une meilleure lisibilité
-                ax.tick_params(axis='x', rotation=45, labelsize=10)
-                ax.tick_params(axis='y', labelsize=10)
-                
-                # Affichage du graphique dans Streamlit
-                st.pyplot(fig)
+                # Échantillonnage pour accélérer le rendu
+                prices = prices.sample(min(5000, len(prices)), random_state=42)
+
+                # Définition de catégories de prix (tranches de 10 000)
+                bins = range(int(prices.min()), int(prices.max()) + 10_000, 10_000)
+                price_counts = pd.cut(prices, bins=bins).value_counts().sort_index()
+
+                # Affichage rapide du graphique
+                st.bar_chart(price_counts)
+
             else:
                 st.warning("Aucune donnée valide trouvée dans la colonne 'Prix'.")
         else:
             st.warning("La colonne 'Prix' n'a pas été trouvée dans les données.")
-    
+
     except Exception as e:
-        st.error(f"❌ Une erreur s'est produite : {e}")
+        st.error(f"❌ Erreur : {e}")
 
 
 
 
+
+
+#page d'évaluation
 def page_evaluation():
     st.title("⭐ Évaluation de l'application")
     
@@ -263,17 +240,20 @@ def page_evaluation():
             else:
                 # Option 1 : Afficher un lien hypertexte
                 st.success("🎉 Merci d'avoir utilisé notre application ! Veuillez cliquer sur le lien ci-dessous pour remplir le formulaire détaillé.")
-                st.markdown(f"[Cliquez ici pour accéder au formulaire]({https://ee.kobotoolbox.org/x/3ZAgNPD9})")
+                st.markdown("[Cliquez ici pour accéder au formulaire](https://ee.kobotoolbox.org/x/3ZAgNPD9)")
                 
                 # Option 2 : Redirection automatique avec JavaScript
                 st.components.v1.html(
-                    f"""
+                    """
                     <script>
-                        window.open("{https://ee.kobotoolbox.org/x/3ZAgNPD9}", "_blank").focus();
+                        window.open("https://ee.kobotoolbox.org/x/3ZAgNPD9", "_blank").focus();
                     </script>
                     """,
                     height=0
                 )
+
+#
+
 # Menu principal Streamlit
 menu = st.sidebar.radio("📌 Menu", ["Scraper", "Téléchargement Données Brutes", "Dashboard", "Évaluation"])
 if menu == "Scraper":
