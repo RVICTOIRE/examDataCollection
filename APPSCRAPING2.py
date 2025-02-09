@@ -171,7 +171,8 @@ def page_dashboard():
     st.title("📊 Dashboard des données")
     
     # Chemin vers le répertoire contenant les fichiers nettoyés
-    cleaned_data_path = ".streamlit/cleaned_data/"
+    cleaned_data_path = "cleaned_data/"
+
     if not os.path.exists(cleaned_data_path):
         os.makedirs(cleaned_data_path)
     
@@ -245,7 +246,6 @@ def page_dashboard():
 
 
 
-# Page d'évaluation de l'application
 def page_evaluation():
     st.title("⭐ Évaluation de l'application")
     
@@ -258,9 +258,22 @@ def page_evaluation():
         submitted = st.form_submit_button("✅ Soumettre")
         
         if submitted:
-            # Ouvrir le lien Kobotoolbox dans un nouvel onglet
-            webbrowser.open_new_tab(kobo_form_url)
-            st.success("🎉 Merci d'avoir utlisé notre application ! Vous allez être redirigé vers notre formulaire détaillé.")
+            if name.strip() == "":
+                st.warning("Veuillez entrer votre nom avant de soumettre.")
+            else:
+                # Option 1 : Afficher un lien hypertexte
+                st.success("🎉 Merci d'avoir utilisé notre application ! Veuillez cliquer sur le lien ci-dessous pour remplir le formulaire détaillé.")
+                st.markdown(f"[Cliquez ici pour accéder au formulaire]({https://ee.kobotoolbox.org/x/3ZAgNPD9})")
+                
+                # Option 2 : Redirection automatique avec JavaScript
+                st.components.v1.html(
+                    f"""
+                    <script>
+                        window.open("{https://ee.kobotoolbox.org/x/3ZAgNPD9}", "_blank").focus();
+                    </script>
+                    """,
+                    height=0
+                )
 # Menu principal Streamlit
 menu = st.sidebar.radio("📌 Menu", ["Scraper", "Téléchargement Données Brutes", "Dashboard", "Évaluation"])
 if menu == "Scraper":
