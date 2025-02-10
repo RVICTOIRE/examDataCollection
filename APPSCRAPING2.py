@@ -204,10 +204,15 @@ def page_dashboard():
 
                 # Définition de catégories de prix (tranches de 10 000)
                 bins = range(int(prices.min()), int(prices.max()) + 10_000, 10_000)
-                price_counts = pd.cut(prices, bins=bins).value_counts().sort_index()
+                price_bins = pd.cut(prices, bins=bins)  # Catégorisation des prix
+                price_counts = price_bins.value_counts().sort_index()
 
-                # Affichage rapide du graphique
+                # ✅ Convertir les intervalles en chaînes pour éviter l'erreur
+                price_counts.index = [f"{int(i.left)}-{int(i.right)}" for i in price_counts.index]
+
+                # Affichage optimisé du graphique
                 st.bar_chart(price_counts)
+
 
             else:
                 st.warning("Aucune donnée valide trouvée dans la colonne 'Prix'.")
